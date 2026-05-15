@@ -76,4 +76,13 @@ int main(int argc, char* argv[]) {
             b.create_blob_file(curr_path);
         }
     }
+
+    if(command=="cat-file") {
+        if (argc<3) {
+            cerr << "fatal: No blob hash provided.\n";
+            return EXIT_FAILURE;
+        }
+        string blob_hash = argv[2];
+        cout << read_blob(blob_hash, curr_path) << endl;
+    }
 }
