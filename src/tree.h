@@ -1,14 +1,23 @@
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include "sha1.h"
+#pragma once
+
+#include <algorithm>
+#include "blob.h"
+#include "object.h"
 
 using namespace std;
 using namespace std::filesystem;
 
 class tree {
+    private:
+    string tree_contents="";
+
     public:
     string hash;
+    string hash_raw;
 
     tree(path dir);
+
+    void create_tree(path repo_path);
 };
+
+string read_tree(string tree_hash,path repo_path);

@@ -6,4 +6,4 @@
 
 using namespace std;
 
-string sha1(const string& str);
+string sha1(const string& str, int raw=0);
