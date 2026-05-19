@@ -17,13 +17,13 @@ blob::blob(path filepath) {
     this->hash_raw=blob_object.hash_raw;
 }
 
-void blob::create_blob_file(path repo_path) {
+void blob::create_blob_file() {
     object blob_object(blob_contents);
-    blob_object.create_object_file(repo_path);
+    blob_object.create_object_file();
 }
 
-string read_blob(string blob_hash,path repo_path) {
-    string decompressed_data=decompress_object(blob_hash,repo_path);
+string read_blob(string blob_hash) {
+    string decompressed_data=decompress_object(blob_hash);
     string contents=decompressed_data.substr(decompressed_data.find('\0')+1);
 
     return contents;

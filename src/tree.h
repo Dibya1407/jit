@@ -1,6 +1,7 @@
 #pragma once
 
 #include <algorithm>
+#include "globals.h"
 #include "blob.h"
 #include "object.h"
 
@@ -17,7 +18,7 @@ class tree {
 
     tree(path dir);
 
-    void create_tree(path repo_path);
+    void create_tree();
 };
 
-string read_tree(string tree_hash,path repo_path);
+string read_tree(string tree_hash);

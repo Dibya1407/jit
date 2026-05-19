@@ -6,6 +6,7 @@
 #include <iostream>
 #include <zlib.h>
 #include <vector>
+#include "globals.h"
 #include "sha1.h"
 
 using namespace std;
@@ -21,7 +22,7 @@ class object {
 
     object(string content);
 
-    void create_object_file(path repo_path);
+    void create_object_file();
 };
 
-string decompress_object(string object_hash, path repo_path);
+string decompress_object(string object_hash);

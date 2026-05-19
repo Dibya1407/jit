@@ -47,14 +47,14 @@ tree::tree(path dir) {
 }
 
 
-void tree::create_tree(path repo_path) {
+void tree::create_tree() {
     object tree_object(tree_contents);
-    tree_object.create_object_file(repo_path);
+    tree_object.create_object_file();
 }
 
 
-string read_tree(string tree_hash,path repo_path) {
-    string decompressed_data=decompress_object(tree_hash,repo_path);
+string read_tree(string tree_hash) {
+    string decompressed_data=decompress_object(tree_hash);
 
     string should_be_tree=decompressed_data.substr(0,decompressed_data.find(' '));
     if (should_be_tree != "tree") {

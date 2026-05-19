@@ -9,7 +9,7 @@ object::object(string content) {
     hash_raw=sha1(contents,1);
 }
 
-void object::create_object_file(path repo_path) {
+void object::create_object_file() {
     if (!exists(repo_path/".jit/objects")) {
         cerr << "fatal: Repository not initialized. Please run 'jit init' first." << endl;
         return;
@@ -44,7 +44,7 @@ void object::create_object_file(path repo_path) {
 }
 
 
-string decompress_object(string object_hash, path repo_path) {
+string decompress_object(string object_hash) {
     //file path finding code
     string dirname=object_hash.substr(0,2);
     string filename=object_hash.substr(2);
