@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <functional>
+#include "exceptions.h"
 #include "globals.h"
 #include "commands.h"
 
@@ -28,12 +29,23 @@ int main(int argc, char* argv[]) {
         {"make-tree",make_tree},
         {"ls-tree",ls_tree},
         {"config",config},
+        {"commit-tree",commit_tree},
+        {"commit",do_commit},
         {"",[]() { cerr << "fatal: No command provided.\n"; return EXIT_FAILURE; }}
     };
 
-    if (commands.find(command) != commands.end()) return commands[command]();
-    else {
-        cout<<"Unknown command: "<<command<<endl;
+    try {
+        if (commands.find(command) != commands.end()) return commands[command]();
+        else {
+            cout<<"Unknown command: "<<command<<endl;
+            return EXIT_FAILURE;
+        }
+    } catch (const JitError& e) {
+        cerr << "fatal: " << e.what() << endl;
+        return EXIT_FAILURE;
+    }
+    catch (const std::exception& e) {
+        cerr << "Unexpected Error: " << e.what() << endl;
         return EXIT_FAILURE;
     }
 

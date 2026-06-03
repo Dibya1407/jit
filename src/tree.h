@@ -1,6 +1,8 @@
 #pragma once
 
+#include "exceptions.h"
 #include <algorithm>
+#include "ignore.h"
 #include "globals.h"
 #include "blob.h"
 #include "object.h"
@@ -16,9 +18,11 @@ class tree {
     string hash;
     string hash_raw;
 
-    tree(path dir);
+    tree(path dir,bool make_blobs=false);
 
-    void create_tree();
+    void create_tree_file();
 };
+
+bool is_tree(string object_hash);
 
 string read_tree(string tree_hash);

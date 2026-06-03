@@ -11,8 +11,7 @@ object::object(string content) {
 
 void object::create_object_file() {
     if (!exists(repo_path/".jit/objects")) {
-        cerr << "fatal: Repository not initialized. Please run 'jit init' first." << endl;
-        return;
+        throw RepoNotFound("Repository not initialized. Please run 'jit init' first.");
     }
     try{
         string dirname = hash.substr(0,2);
@@ -44,14 +43,16 @@ void object::create_object_file() {
 }
 
 
-string decompress_object(string object_hash) {
-    //file path finding code
+string get_full_hash(string object_hash) {
+    if (object_hash.size()<4) {
+        throw InvalidObject("Invalid object hash");
+    }
+
     string dirname=object_hash.substr(0,2);
     string filename=object_hash.substr(2);
 
-    if (!exists(repo_path/".jit/objects"/dirname) || object_hash.size()<4) {
-        cerr << "fatal: Invalid object hash" << endl;
-        return "";
+    if (!exists(repo_path/".jit/objects"/dirname)) {
+        throw ObjectNotFound("Object with hash " + object_hash + " does not exist.");
     }
 
     for (auto &p:directory_iterator(repo_path/".jit/objects"/dirname)) {
@@ -62,9 +63,17 @@ string decompress_object(string object_hash) {
     }
 
     if(!exists(repo_path/".jit/objects"/dirname/filename)) {
-        cerr << "fatal: object with hash " << object_hash << " does not exist." << endl;
-        return "";
+        throw ObjectNotFound("Object with hash " + object_hash + " does not exist.");
     }
+
+    return dirname+filename;
+}
+
+
+string decompress_object(string object_hash) {
+    object_hash=get_full_hash(object_hash);
+    string dirname=object_hash.substr(0,2);
+    string filename=object_hash.substr(2);
 
     //Decompressing code
     ifstream object_file(repo_path/".jit/objects"/dirname/filename);

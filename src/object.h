@@ -1,5 +1,6 @@
 #pragma once
 
+#include "exceptions.h"
 #include <filesystem>
 #include <string>
 #include <fstream>
@@ -24,5 +25,7 @@ class object {
 
     void create_object_file();
 };
+
+string get_full_hash(string object_hash);
 
 string decompress_object(string object_hash);

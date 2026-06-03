@@ -1,9 +1,8 @@
 #include "tree.h"
 
-tree::tree(path dir) {
+tree::tree(path dir,bool make_blobs) {
     if (!is_directory(dir)) {
-        cerr<< "not a directory path can't make a tree\n";
-        return;
+        throw JitError("not a directory path can't make a tree");
     }
 
     directory_iterator dir_iter(dir);
@@ -12,6 +11,14 @@ tree::tree(path dir) {
     
     for (auto& entry:dir_iter) {
         entries.push_back(entry);
+    }
+
+    if (make_blobs) {
+        make_ignore_list();
+        string dirname=relative(dir,repo_path).string();
+        if (ignore_list.count(dirname)) {
+            return;
+        }
     }
 
     //need sorted entries by filename for deterministic hash.
@@ -29,13 +36,20 @@ tree::tree(path dir) {
 
             string blob_hash=blob(file_path).hash_raw;
 
+            if (make_blobs) {
+                string relative_path=relative(file_path,repo_path).string();
+                if (!ignore_list.count(relative_path)) {
+                    blob(file_path).create_blob_file();
+                }
+            }
+
             string filename=file_path.filename().string();
 
             tree_contents+=mode_str+' '+filename+'\0'+blob_hash;
         }
         if (entry.is_directory()) {
             string dirname=entry.path().filename().string();
-            string dir_hash=tree(entry.path()).hash_raw;    //recursive call
+            string dir_hash=tree(entry.path(),make_blobs).hash_raw;    //recursive call
 
             tree_contents+="040000 "+dirname+'\0'+dir_hash;
         }
@@ -47,20 +61,29 @@ tree::tree(path dir) {
 }
 
 
-void tree::create_tree() {
+void tree::create_tree_file() {
     object tree_object(tree_contents);
     tree_object.create_object_file();
 }
 
 
-string read_tree(string tree_hash) {
-    string decompressed_data=decompress_object(tree_hash);
+bool is_tree(string object_hash) {
+    string decompressed_data=decompress_object(object_hash);
 
     string should_be_tree=decompressed_data.substr(0,decompressed_data.find(' '));
     if (should_be_tree != "tree") {
-        cerr << "fatal: Invalid tree object" << endl;
-        return "";
+        return false;
     }
+    return true;
+}
+
+
+string read_tree(string tree_hash) {
+    if (!is_tree(tree_hash)) {
+        throw InvalidTree("Object with hash " + tree_hash + " is not a tree.");
+    }
+
+    string decompressed_data=decompress_object(tree_hash);
 
     string contents=decompressed_data.substr(decompressed_data.find('\0')+1);
 

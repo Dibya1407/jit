@@ -23,8 +23,7 @@ int hash_object() {
     bool to_write=false;
 
     if (!arg_size) {
-        cerr << "fatal: No file path provided.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("No file path provided.");
     }
     if (arg_size==1) file_path=args[0];
     else if (arg_size==2) {
@@ -40,19 +39,16 @@ int hash_object() {
             to_write=true;
         }
         else {
-            cerr<<"fatal: Invalid option"<<endl;
-            return EXIT_FAILURE;
+            throw InvalidArgument("Invalid option");
         }
     }
     else {
-        cerr<<"fatal: Too many files or options"<<endl;
-        return EXIT_FAILURE;
+        throw InvalidArgument("Too many files or options");
     }
 
     
     if (!exists(file_path)) {
-        cerr << "fatal: File does not exist.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("File does not exist.");
     }
 
     blob b(file_path);
@@ -68,8 +64,7 @@ int hash_object() {
 
 int cat_file() {
     if (!args.size()) {
-        cerr << "fatal: Invalid number of arguments.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("Invalid number of arguments.");
     }
 
     string blob_hash = args[0];
@@ -84,8 +79,7 @@ int make_tree() {
     bool to_write=false;
 
     if (!arg_size) {
-        cerr << "fatal: No file path provided.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("No file path provided.");
     }
     if (arg_size==1) file_path=args[0];
     else if (arg_size==2) {
@@ -101,31 +95,27 @@ int make_tree() {
             to_write=true;
         }
         else {
-            cerr<<"fatal: Invalid option"<<endl;
-            return EXIT_FAILURE;
+            throw InvalidArgument("Invalid option");
         }
     }
     else {
-        cerr<<"fatal: Too many files or options"<<endl;
-        return EXIT_FAILURE;
+        throw InvalidArgument("Too many files or options");
     }
 
     
     if (!exists(file_path)) {
-        cerr << "fatal: File does not exist.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("File does not exist.");
     }
 
     if (!is_directory(file_path)) {
-        cerr << "fatal: Not a directory.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("Not a directory.");
     }
 
     tree t(file_path);
     cout << t.hash << endl;
 
     if (to_write) {
-        t.create_tree();
+        t.create_tree_file();
     }
 
     return 0;
@@ -134,8 +124,7 @@ int make_tree() {
 
 int ls_tree() {
     if (!args.size()) {
-        cerr << "fatal: Invalid number of arguments.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("Invalid number of arguments.");
     }
 
     string tree_hash = args[0];
@@ -146,8 +135,7 @@ int ls_tree() {
 
 int config() {
     if (args.size()!=2) {
-        cerr << "fatal: Invalid number of arguments.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("Invalid number of arguments.");
     }
 
     if (args[0]=="user") {
@@ -157,16 +145,14 @@ int config() {
     }
     else if (args[0]=="email") {
         if (!exists(repo_path/".jit/config")) {
-            cerr << "fatal: run jit config user <username> first.\n";
-            return EXIT_FAILURE;
+            throw ConfigError("run jit config user <username> first.");
         }
         ifstream file(repo_path/".jit/config");
         string line;
         while (getline(file, line)) {
             if (line.find("email: ") == 0) {
-                cerr<< "fatal: username and email already set.\nrun jit config user <username> and jit config email <email> again."<<endl;
                 file.close();
-                return EXIT_FAILURE;
+                throw ConfigError("username and email already set.\nrun jit config user <username> and jit config email <email> again.");
             }
         }
         file.close();
@@ -176,9 +162,38 @@ int config() {
         config_file.close();
     }
     else {
-        cerr << "fatal: Invalid config option.\n";
-        return EXIT_FAILURE;
+        throw InvalidArgument("Invalid option.");
     }
+
+    return 0;
+}
+
+int commit_tree() {
+    if (args.size()<2) {
+        throw InvalidArgument("Invalid number of arguments.");
+    }
+
+    string tree_hash = args[0];
+    string message = args[1];
+    string parent_hash="";
+    if (args.size() > 2) parent_hash = args[2];
+
+    commit c(tree_hash, message, parent_hash);
+
+    return 0;
+}
+
+int do_commit() {
+    if (args.size() < 2) {
+        throw InvalidArgument("Invalid number of arguments.");
+    }
+    if (args[0] != "-m") {
+        throw InvalidArgument("Invalid option.");
+    }
+
+    string message = args[1];
+
+    make_commit(message);
 
     return 0;
 }
