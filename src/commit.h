@@ -4,6 +4,7 @@
 #include "object.h"
 #include "blob.h"
 #include "tree.h"
+#include <ctime>
 
 using namespace std;
 using namespace std::filesystem;
@@ -17,7 +18,7 @@ class commit{
     string hash;
     string hash_raw;
 
-    commit(string tree_hash,string message,string parent_hash="");
+    commit(string tree_hash,string message,string parent_hash="",bool log=false);
 
     void create_commit_file();
 };

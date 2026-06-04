@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
         {"config",config},
         {"commit-tree",commit_tree},
         {"commit",do_commit},
+        {"log",log},
+        {"checkout",do_checkout},
         {"",[]() { cerr << "fatal: No command provided.\n"; return EXIT_FAILURE; }}
     };
 

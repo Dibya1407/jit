@@ -111,6 +111,7 @@ int make_tree() {
         throw InvalidArgument("Not a directory.");
     }
 
+    make_ignore_list();
     tree t(file_path);
     cout << t.hash << endl;
 
@@ -178,6 +179,7 @@ int commit_tree() {
     string parent_hash="";
     if (args.size() > 2) parent_hash = args[2];
 
+    make_ignore_list();
     commit c(tree_hash, message, parent_hash);
 
     return 0;
@@ -193,7 +195,34 @@ int do_commit() {
 
     string message = args[1];
 
+    make_ignore_list();
     make_commit(message);
+
+    return 0;
+}
+
+int log() {
+    if (!exists(repo_path/".jit/log")) {
+        throw InvalidArgument("No commits yet.");
+    }
+
+    ifstream log_file(repo_path/".jit/log");
+    string line;
+    while (getline(log_file, line)) {
+        cout << line << endl;
+    }
+    log_file.close();
+
+    return 0;
+}
+
+int do_checkout() {
+    if (!args.size()) {
+        throw InvalidArgument("Invalid number of arguments.");
+    }
+
+    string commit_hash = args[0];
+    checkout(commit_hash);
 
     return 0;
 }

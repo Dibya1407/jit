@@ -2,7 +2,6 @@
 
 #include "exceptions.h"
 #include <algorithm>
-#include "ignore.h"
 #include "globals.h"
 #include "blob.h"
 #include "object.h"

@@ -1,6 +1,6 @@
 #include "commit.h"
 
-commit::commit(string tree_hash,string message,string parent_hash) {
+commit::commit(string tree_hash,string message,string parent_hash,bool log) {
     if (!is_tree(tree_hash)) {
         throw InvalidTree("Object with hash " + tree_hash + " is not a tree.");
     }
@@ -35,7 +35,11 @@ commit::commit(string tree_hash,string message,string parent_hash) {
     }
 
     string time_epoch=to_string(time(nullptr));
-    string time_zone="+0530";
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    char time_zone[6];
+    strftime(time_zone, sizeof(time_zone), "%z", ltm);
 
     contents+="tree "+tree_hash+'\n';
     if (parent_hash!="") contents+="parent "+parent_hash+'\n';
@@ -47,6 +51,18 @@ commit::commit(string tree_hash,string message,string parent_hash) {
     contents="commit "+to_string(contents.size())+'\0'+contents;
     hash=sha1(contents,0);
     hash_raw=sha1(contents,1);
+
+    if (log) {
+        char date[100];
+        strftime(date, sizeof(date), "%a %b %d %H:%M:%S %Y %z", ltm);
+
+        ofstream log_file(repo_path/".jit/log",ios::app);
+        log_file << "commit " << hash << endl;
+        log_file << "author " << username << " <" << email << ">\n";
+        log_file << "Date: " << date << "\n\n";
+        log_file << '\t' << message << "\n\n";
+        log_file.close();
+    }
 
     cout<<hash<<endl;
 
@@ -73,6 +89,6 @@ bool is_commit(string object_hash) {
 void make_commit(string message,string parent_hash) {
     tree t(repo_path,true);
     t.create_tree_file();
-    commit c(t.hash,message,parent_hash);
+    commit c(t.hash,message,parent_hash,true);
     c.create_commit_file();
 }

@@ -13,12 +13,9 @@ tree::tree(path dir,bool make_blobs) {
         entries.push_back(entry);
     }
 
-    if (make_blobs) {
-        make_ignore_list();
-        string dirname=relative(dir,repo_path).string();
-        if (ignore_list.count(dirname)) {
-            return;
-        }
+    string dirname=relative(dir,repo_path).string();
+    if (ignore_list.count(dirname)) {
+        if (make_blobs) return; // for normal call from make-tree, we want the tree hash once.
     }
 
     //need sorted entries by filename for deterministic hash.
@@ -30,18 +27,17 @@ tree::tree(path dir,bool make_blobs) {
         if (entry.is_regular_file()) {
             path file_path=entry.path();
 
+            string relative_path=relative(file_path,repo_path).string();
+            if (ignore_list.count(relative_path)) continue;
+            if (make_blobs) {
+                blob(file_path).create_blob_file();
+            }
+
             perms perm=entry.status().permissions();
             int mode=static_cast<int>(perm);
             string mode_str="100" + (stringstream{} << oct << (mode & 0777)).str();
 
             string blob_hash=blob(file_path).hash_raw;
-
-            if (make_blobs) {
-                string relative_path=relative(file_path,repo_path).string();
-                if (!ignore_list.count(relative_path)) {
-                    blob(file_path).create_blob_file();
-                }
-            }
 
             string filename=file_path.filename().string();
 
@@ -49,6 +45,10 @@ tree::tree(path dir,bool make_blobs) {
         }
         if (entry.is_directory()) {
             string dirname=entry.path().filename().string();
+
+            string relative_path=relative(entry.path(),repo_path).string();
+            if (ignore_list.count(relative_path)) continue;
+
             string dir_hash=tree(entry.path(),make_blobs).hash_raw;    //recursive call
 
             tree_contents+="040000 "+dirname+'\0'+dir_hash;
@@ -58,6 +58,10 @@ tree::tree(path dir,bool make_blobs) {
     tree_contents="tree "+to_string(tree_contents.size())+'\0'+tree_contents;
     hash=sha1(tree_contents,0);
     hash_raw=sha1(tree_contents,1);
+
+    if (make_blobs) {
+        create_tree_file();
+    }
 }
 
 
