@@ -1,10 +1,17 @@
 #include "commands.h"
 
 int init() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit init\n\n"
+             << "Initialize a new local repository.\n";
+        return 0;
+    }
+
     try {
         if (!exists(repo_path/".jit")) create_directory(repo_path/".jit");
         if (!exists(repo_path/".jit/objects")) create_directory(repo_path/".jit/objects");
         if (!exists(repo_path/".jit/refs")) create_directory(repo_path/".jit/refs");
+        if (!exists(repo_path/".jit/refs/heads")) create_directory(repo_path/".jit/refs/heads");
 
         ofstream head(repo_path/".jit/HEAD");
         head << "ref: refs/heads/main" << endl;
@@ -21,6 +28,12 @@ int hash_object() {
     int arg_size=args.size();
     path file_path;
     bool to_write=false;
+
+    if (arg_size > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit hash-object [-w] <filepath>\n\n"
+             << "Hashes an object (file) and optionally writes it to the object database using -w.\n";
+        return 0;
+    }
 
     if (!arg_size) {
         throw InvalidArgument("No file path provided.");
@@ -63,6 +76,12 @@ int hash_object() {
 }
 
 int cat_file() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit cat-file <hash>\n\n"
+             << "Prints the contents of an object given its hash.\n";
+        return 0;
+    }
+
     if (!args.size()) {
         throw InvalidArgument("Invalid number of arguments.");
     }
@@ -78,8 +97,14 @@ int make_tree() {
     path file_path;
     bool to_write=false;
 
+    if (arg_size > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit make-tree [-w] <directory-path>\n\n"
+             << "Creates a tree object for the given directory and optionally writes it to the object database using -w.\n";
+        return 0;
+    }
+
     if (!arg_size) {
-        throw InvalidArgument("No file path provided.");
+        throw InvalidArgument("No directory path provided.");
     }
     if (arg_size==1) file_path=args[0];
     else if (arg_size==2) {
@@ -124,6 +149,12 @@ int make_tree() {
 }
 
 int ls_tree() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit ls-tree <tree-hash>\n\n"
+             << "Lists the contents of a tree object.\n";
+        return 0;
+    }
+
     if (!args.size()) {
         throw InvalidArgument("Invalid number of arguments.");
     }
@@ -135,6 +166,12 @@ int ls_tree() {
 }
 
 int config() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit config <key> <value>\n\n"
+             << "Configure user details (e.g. user and email).\n";
+        return 0;
+    }
+
     if (args.size()!=2) {
         throw InvalidArgument("Invalid number of arguments.");
     }
@@ -170,6 +207,12 @@ int config() {
 }
 
 int commit_tree() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit commit-tree <tree-hash> \"<message>\" [<parent-hash>]\n\n"
+             << "Create a commit object mapping to a tree object natively.\n";
+        return 0;
+    }
+
     if (args.size()<2) {
         throw InvalidArgument("Invalid number of arguments.");
     }
@@ -186,6 +229,12 @@ int commit_tree() {
 }
 
 int do_commit() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit commit -m \"<message>\"\n\n"
+             << "Create a full commit mapping to the current repository working directory.\n";
+        return 0;
+    }
+
     if (args.size() < 2) {
         throw InvalidArgument("Invalid number of arguments.");
     }
@@ -202,6 +251,12 @@ int do_commit() {
 }
 
 int log() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit log\n\n"
+             << "View the commit history from the current HEAD.\n";
+        return 0;
+    }
+
     if (!exists(repo_path/".jit/log")) {
         throw InvalidArgument("No commits yet.");
     }
@@ -217,6 +272,12 @@ int log() {
 }
 
 int do_checkout() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit checkout <commit-hash>\n\n"
+             << "Switch the repository working directory to the exact state of a given commit hash.\n";
+        return 0;
+    }
+
     if (!args.size()) {
         throw InvalidArgument("Invalid number of arguments.");
     }
