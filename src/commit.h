@@ -25,4 +25,6 @@ class commit{
 
 bool is_commit(string object_hash);
 
-void make_commit(string message,string parent_hash="");
+void make_commit(string message);
+
+string get_head_hash();

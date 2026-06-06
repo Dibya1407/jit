@@ -1,6 +1,6 @@
 #include "ignore.h"
 
-unordered_set<string> ignore_list={".jit"};
+unordered_set<string> ignore_list={".jit","jit"};
 
 void make_ignore_list() {
     if (exists(repo_path/".jitignore")) {

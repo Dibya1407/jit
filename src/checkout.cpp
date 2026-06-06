@@ -1,6 +1,6 @@
 #include "checkout.h"
 
-void checkout(string commit_hash) {
+void checkout(string commit_hash,bool direct) {
     if (!is_commit(commit_hash)) {
         throw InvalidCommit("Object with hash " + commit_hash + " is not a commit.");
     }
@@ -10,6 +10,12 @@ void checkout(string commit_hash) {
 
     make_ignore_list();
     checkout_tree(tree_hash, repo_path);
+
+    if (direct) {
+        ofstream head_file(repo_path/".jit/HEAD");
+        head_file << get_full_hash(commit_hash);
+        head_file.close();
+    }
 }
 
 
@@ -66,7 +72,10 @@ void checkout_tree(string tree_hash, path dirpath) {
 
     for (const auto& entry : dir_iter) {
         string rel_path=relative(entry.path(), repo_path).string();
-        if (ignore_list.count(rel_path)) continue;
+        if (ignore_list.count(rel_path)) {
+            visited[entry.path().filename().string()]=true;
+            continue;
+        }
 
         if (entry.is_regular_file()) {
             string filename=entry.path().filename().string();
@@ -118,4 +127,21 @@ void checkout_tree(string tree_hash, path dirpath) {
             checkout_tree(hash, dirpath/dirname);
         }
     }
+}
+
+void checkout_branch(string branch_name) {
+    if (!is_branch(branch_name)) {
+        throw JitError("branch with name "+branch_name+" doesn't exist.");
+    }
+
+    ifstream branch_file(repo_path/".jit/refs/heads"/branch_name);
+    string commit_hash;
+    branch_file >> commit_hash;
+    branch_file.close();
+
+    checkout(commit_hash);
+
+    ofstream head_file(repo_path/".jit/HEAD");
+    head_file << "ref: refs/heads/"+branch_name;
+    head_file.close();
 }

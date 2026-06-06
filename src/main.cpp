@@ -32,7 +32,8 @@ int main(int argc, char* argv[]) {
              << "  commit-tree    Create a commit object mapping to a tree object\n"
              << "  commit         Create a full commit mapping to the current repository\n"
              << "  log            View the commit history\n"
-             << "  checkout       Switch the repository state of a given commit hash\n\n"
+             << "  checkout       Switch the repository state of a given commit hash or a branch\n"
+             << "  branch         Create a new branch\n\n"
              << "Run 'jit <command> -h' to see specific usage for a command.\n";
         return EXIT_SUCCESS;
     }
@@ -49,8 +50,9 @@ int main(int argc, char* argv[]) {
         {"config",config},
         {"commit-tree",commit_tree},
         {"commit",do_commit},
-        {"log",log},
+        {"log",do_log},
         {"checkout",do_checkout},
+        {"branch",branch},
         {"",[]() { cerr << "fatal: No command provided. Use 'jit -h' for help.\n"; return EXIT_FAILURE; }}
     };
 

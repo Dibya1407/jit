@@ -11,6 +11,7 @@
 #include "tree.h"
 #include "commit.h"
 #include "checkout.h"
+#include "log.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -23,5 +24,6 @@ int ls_tree();
 int config();
 int commit_tree();
 int do_commit();
-int log();
+int do_log();
 int do_checkout();
+int branch();

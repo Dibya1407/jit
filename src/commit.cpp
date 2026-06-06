@@ -86,9 +86,47 @@ bool is_commit(string object_hash) {
     return true;
 }
 
-void make_commit(string message,string parent_hash) {
+string get_head_hash() {
+    if (!exists(repo_path/".jit/HEAD")) {
+        throw RepoNotFound("Repository not initialized. Please run 'jit init' first.");
+    }
+
+    ifstream head_file(repo_path/".jit/HEAD");
+    string head_contents,parent_hash="";
+    getline(head_file,head_contents);
+    head_file.close();
+
+    if (head_contents.find("ref: ") == 0) {
+        string branch_head_path = ".jit/" + head_contents.substr(5);;
+        if (exists(repo_path/branch_head_path)) {
+            ifstream branch_head(repo_path/branch_head_path);
+            branch_head >> parent_hash;
+            branch_head.close();
+        }
+    }
+    else {
+        parent_hash=head_contents;
+    }
+
+    return parent_hash;
+}
+
+void make_commit(string message) {
+    string parent_hash=get_head_hash();
+
     tree t(repo_path,true);
     t.create_tree_file();
     commit c(t.hash,message,parent_hash,true);
     c.create_commit_file();
+
+    ifstream head_file(repo_path/".jit/HEAD");
+    string head_contents;
+    getline(head_file,head_contents);
+    head_file.close();
+
+    string branch_head_path=".jit/"+head_contents;
+
+    ofstream branch_head(repo_path/branch_head_path);
+    branch_head << c.hash;
+    branch_head.close();
 }

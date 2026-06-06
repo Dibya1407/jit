@@ -250,40 +250,60 @@ int do_commit() {
     return 0;
 }
 
-int log() {
+int do_log() {
     if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
         cout << "Usage: jit log\n\n"
-             << "View the commit history from the current HEAD.\n";
+             << "View the commit history.\n";
         return 0;
     }
 
-    if (!exists(repo_path/".jit/log")) {
-        throw InvalidArgument("No commits yet.");
-    }
-
-    ifstream log_file(repo_path/".jit/log");
-    string line;
-    while (getline(log_file, line)) {
-        cout << line << endl;
-    }
-    log_file.close();
+    log();
 
     return 0;
 }
 
 int do_checkout() {
     if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
-        cout << "Usage: jit checkout <commit-hash>\n\n"
-             << "Switch the repository working directory to the exact state of a given commit hash.\n";
+        cout << "Usage: jit checkout -h <commit-hash>\nUsage: jit checkout -b <branch-name>\n\n"
+             << "Switch the repository working directory to the exact state of a given commit hash or a branch.\n";
+        return 0;
+    }
+
+    if (args.size()<2) {
+        throw InvalidArgument("Invalid number of arguments.");
+    }
+
+    string option = args[0];
+
+    if (option=="-c") {
+        string commit_hash=args[1];
+        checkout(commit_hash,true);
+    }
+    else if (option=="-b") {
+        string branch_name=args[1];
+        checkout_branch(branch_name);
+    }
+    else {
+        throw InvalidArgument("Invalid option.");
+    }
+
+    return 0;
+}
+
+int branch() {
+    if (args.size() > 0 && (args[0] == "-h" || args[0] == "--help")) {
+        cout << "Usage: jit branch [<branch-name>]\n\n"
+             << "List existing branches or create a new branch.\n";
         return 0;
     }
 
     if (!args.size()) {
-        throw InvalidArgument("Invalid number of arguments.");
+        list_branches();
+        return 0;
     }
 
-    string commit_hash = args[0];
-    checkout(commit_hash);
+    string branch_name = args[0];
+    create_branch(branch_name);
 
     return 0;
 }

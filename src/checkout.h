@@ -6,7 +6,10 @@
 #include "ignore.h"
 #include "exceptions.h"
 #include "commit.h"
+#include "branch.h"
 
-void checkout(string commit_hash);
+void checkout(string commit_hash,bool direct=false);
 
 void checkout_tree(string tree_hash, path dirpath);
+
+void checkout_branch(string branch_name);
